@@ -7,7 +7,7 @@
 #include <sys/uio.h>
 #include <unistd.h>
 
-int read_mem(pid_t pid, void* addr, long length, char* dataname);
+int read_mem(pid_t pid, void* addr, size_t length, char* dataname);
 
 int main(int argc, char** argv)
 {
@@ -44,7 +44,7 @@ int main(int argc, char** argv)
   return 0;
 }
 
-int read_mem(pid_t pid, void* addr, long length, char* dataname)
+int read_mem(pid_t pid, void* addr, size_t length, char* dataname)
 {
   printf("reading mem %p %ld %s\n", addr, length, dataname);
 
@@ -53,18 +53,18 @@ int read_mem(pid_t pid, void* addr, long length, char* dataname)
   strcpy(filename, "dump.");
   strcat(filename, dataname);
 
-  struct iovec local[1];
-  struct iovec remote[1];
+  struct iovec local;
+  struct iovec remote;
 
   char* buf = malloc(length * sizeof(char));
 
-  local[0].iov_base = buf;
-  local[0].iov_len = length;
+  local.iov_base = buf;
+  local.iov_len = length;
 
-  remote[0].iov_base = addr;
-  remote[0].iov_len = length;
+  remote.iov_base = addr;
+  remote.iov_len = length;
 
-  process_vm_readv(pid, local, 1, remote, 1, 0);
+  process_vm_readv(pid, &local, 1, &remote, 1, 0);
   perror("vm read");
   errno = 0;
 

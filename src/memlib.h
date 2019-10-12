@@ -12,7 +12,7 @@ struct mapping {
   mapping* prev;
   void* addr_start;
   void* addr_stop;
-  long length;
+  size_t length;
   char perms[5];
   int offset;
   unsigned int devmajor;
