@@ -19,8 +19,6 @@ mapping* mapping_getall(pid_t pid)
   mapping* prev_mapping = NULL;
 
   while (fgets(maps_rbuf, 256, maps) != NULL) {
-    printf("%s", maps_rbuf);
-
     mapping* map = calloc(1, sizeof(mapping));
 
     if (first_mapping == NULL) {
@@ -32,20 +30,10 @@ mapping* mapping_getall(pid_t pid)
 
     sscanf(maps_rbuf, "%p-%p %s %d %x:%x %d %s\n", &map->addr_start, &map->addr_stop, map->perms, &map->offset, &map->devmajor, &map->devminor, &map->inode, map->pathname);
 
-    //printf("%p-%p %s %d %x:%x %d %s\n", map.addr_start, map.addr_stop, map.perms, map.offset, map.devmajor, map.devminor, map.inode, map.pathname);
-
     map->length = (long)map->addr_stop - (long)map->addr_start;
 
-    printf("addr_start %p\n", map->addr_start);
-    printf("addr_stop  %p\n", map->addr_stop);
-    printf("length     %lx\n", map->length);
-    printf("perms      %s\n", map->perms);
-    printf("offset     %08d\n", map->offset);
-    printf("dev        %02x:%02x\n", map->devmajor, map->devminor);
-    printf("inode      %d\n", map->inode);
-    printf("pathname   \"%s\"\n", map->pathname);
+    mapping_print(map);
 
-    printf("--------------------------------------------------------------------------------\n");
     prev_mapping = map;
   }
 
@@ -53,4 +41,19 @@ mapping* mapping_getall(pid_t pid)
   perror("fclose maps");
 
   return first_mapping;
+}
+
+int mapping_print(mapping* map)
+{
+  printf("addr_start %p\n", map->addr_start);
+  printf("addr_stop  %p\n", map->addr_stop);
+  printf("length     %lx\n", map->length);
+  printf("perms      %s\n", map->perms);
+  printf("offset     %08d\n", map->offset);
+  printf("dev        %02x:%02x\n", map->devmajor, map->devminor);
+  printf("inode      %d\n", map->inode);
+  printf("pathname   \"%s\"\n", map->pathname);
+  printf("--------------------------------------------------------------------------------\n");
+
+  return 0;
 }

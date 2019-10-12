@@ -6,6 +6,7 @@
 typedef struct mapping mapping;
 
 mapping* mapping_getall(pid_t pid);
+int mapping_print(mapping* map);
 
 struct mapping {
   mapping* next;
