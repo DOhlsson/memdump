@@ -14,7 +14,12 @@ mapping* mapping_getall(pid_t pid)
   sprintf(maps_path, "/proc/%d/maps", pid);
 
   FILE* maps = fopen(maps_path, "r");
-  perror("fopen maps");
+  if (maps == NULL) {
+    char errmsg[80] = "fopen ";
+    strcat(errmsg, maps_path);
+    perror(errmsg);
+    exit(1);
+  }
 
   mapping* prev_mapping = NULL;
 
@@ -38,7 +43,6 @@ mapping* mapping_getall(pid_t pid)
   }
 
   fclose(maps);
-  perror("fclose maps");
 
   return first_mapping;
 }
