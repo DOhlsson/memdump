@@ -18,56 +18,28 @@ int main(int argc, char** argv)
 
   pid_t pid = atoi(argv[1]);
 
-  char maps_path[80];
-  char maps_rbuf[256];
-  sprintf(maps_path, "/proc/%d/maps", pid);
-
-  FILE* maps = fopen(maps_path, "r");
-  perror("fopen maps");
+  mapping* map = mapping_getall(pid);
 
   int unnamed_count = 0;
 
-  while (fgets(maps_rbuf, 256, maps) != NULL) {
-    printf("%s", maps_rbuf);
-
-    mapping map = { 0 };
-
-    sscanf(maps_rbuf, "%p-%p %s %d %x:%x %d %s\n", &map.addr_start, &map.addr_stop, map.perms, &map.offset, &map.devmajor, &map.devminor, &map.inode, map.pathname);
-
-    //printf("%p-%p %s %d %x:%x %d %s\n", map.addr_start, map.addr_stop, map.perms, map.offset, map.devmajor, map.devminor, map.inode, map.pathname);
-
-    map.length = (long)map.addr_stop - (long)map.addr_start;
-
-    printf("addr_start %p\n", map.addr_start);
-    printf("addr_stop  %p\n", map.addr_stop);
-    printf("length     %lx\n", map.length);
-    printf("perms      %s\n", map.perms);
-    printf("offset     %08d\n", map.offset);
-    printf("dev        %02x:%02x\n", map.devmajor, map.devminor);
-    printf("inode      %d\n", map.inode);
-    printf("pathname   \"%s\"\n", map.pathname);
-
-    if (map.inode == 0) {
+  while (map != NULL) {
+    if (map->inode == 0) {
       char* dataname = calloc(80, sizeof(char));
-      if (strlen(map.pathname) == 0) {
+      if (strlen(map->pathname) == 0) {
         sprintf(dataname, "unknown%d", unnamed_count);
         unnamed_count++;
       } else {
-        sscanf(map.pathname, "[%[a-z]]", dataname);
+        sscanf(map->pathname, "[%[a-z]]", dataname);
       }
 
       printf("dataname %s\n", dataname);
-      read_mem(pid, map.addr_start, map.length, dataname);
+      read_mem(pid, map->addr_start, map->length, dataname);
 
       free(dataname);
     }
 
-    printf("--------------------------------------------------------------------------------\n");
+    map = map->next;
   }
-
-  fclose(maps);
-  perror("fclose maps");
-  errno = 0;
 
   return 0;
 }

@@ -1,7 +1,11 @@
 #ifndef MEMLIB_H
 #define MEMLIB_H
 
+#include <sys/types.h>
+
 typedef struct mapping mapping;
+
+mapping* mapping_getall(pid_t pid);
 
 struct mapping {
   mapping* next;
