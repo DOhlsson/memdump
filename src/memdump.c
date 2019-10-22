@@ -32,7 +32,6 @@ int main(int argc, char** argv)
         sscanf(map->pathname, "[%[a-z]]", dataname);
       }
 
-      printf("dataname %s\n", dataname);
       read_mem(pid, map->addr_start, map->length, dataname);
 
       free(dataname);
@@ -64,22 +63,25 @@ int read_mem(pid_t pid, void* addr, size_t length, char* dataname)
   remote.iov_base = addr;
   remote.iov_len = length;
 
-  process_vm_readv(pid, &local, 1, &remote, 1, 0);
-  perror("vm read");
-  errno = 0;
+  ssize_t vm_bytes_read = process_vm_readv(pid, &local, 1, &remote, 1, 0);
+  if (vm_bytes_read == -1) {
+    perror("vm read");
+    return -1;
+  }
 
   FILE* fp = fopen(filename, "w");
-  perror("fopen");
-  errno = 0;
+  if (fp == NULL) {
+    perror("fopen");
+    return -1;
+  }
 
-  fwrite(buf, sizeof(char), length, fp);
-  perror("fwrite");
-  errno = 0;
+  size_t file_bytes_written = fwrite(buf, sizeof(char), length, fp);
+  if (file_bytes_written == 0) {
+    perror("fwrite");
+    return -1;
+  }
 
   fclose(fp);
-  perror("fclose");
-  errno = 0;
-
   free(buf);
 
   return 0;
